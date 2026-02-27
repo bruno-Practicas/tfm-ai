@@ -26,6 +26,6 @@ jobs:
             cd /home/ubuntu/PracticasBrunoFront/tfm-ai &&
             git pull origin main &&
             cd .. &&
-            docker compose down &&
-            docker compose up -d --build
+            docker-compose down &&
+            docker-compose up -d --build
           "
