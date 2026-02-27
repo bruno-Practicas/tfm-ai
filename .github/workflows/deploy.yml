@@ -1,9 +1,8 @@
-name: Deploy
+name: Deploy Dev
 
 on:
   push:
     branches:
-      - main
       - dev
 
 jobs:
@@ -23,20 +22,11 @@ jobs:
 
       - name: Deploy
         run: |
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-              cd /home/ubuntu/PracticasBruno/tfm-ai &&
-              git pull origin main &&
-              cd .. &&
-              docker compose down &&
-              docker compose up -d --build
-            "
-          else
-            ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-              cd /home/ubuntu/PracticasBrunoDev/tfm-ai &&
-              git pull origin dev &&
-              cd .. &&
-              docker compose down &&
-              docker compose up -d --build
-            "
-          fi
+
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            cd /home/ubuntu/PracticasBrunoDev/tfm-ai &&
+            git pull origin dev &&
+            cd .. &&
+            docker compose down &
+            docker compose up -d --build
+          "
