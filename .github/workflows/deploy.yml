@@ -22,11 +22,10 @@ jobs:
 
       - name: Deploy Dev
         run: |
-
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
             cd /home/ubuntu/PracticasBrunoDev/tfm-ai &&
             git pull origin dev &&
             cd .. &&
-            docker-compose down &
-            docker-compose up -d --build
+            docker compose down &&
+            docker compose up -d --build
           "
