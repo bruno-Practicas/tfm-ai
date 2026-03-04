@@ -114,7 +114,7 @@ function App() {
             {/* Footer Info */}
             <div className="card text-center text-sm text-volcanic-300" data-exclude-pdf="true">
               <p>
-                Fuente de Datos: Estadísticas Oficiales de Turismo de Canarias (2015-2025)
+                Fuente de Datos: Estadísticas Oficiales de Turismo de Canarias
                 • TFM IA Generativa • 2025
               </p>
             </div>
