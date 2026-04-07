@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: 'Construir y Subir a GHCR'
+    name: Construir y Subir a GHCR
     runs-on: ubuntu-latest
 
     permissions:
@@ -34,5 +34,5 @@ jobs:
           context: ./tfm-ai
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:sha-$SHORT_SHA
+            ghcr.io/${{ github.repository }}:sha-${{ env.SHORT_SHA }}
             ghcr.io/${{ github.repository }}:latest
