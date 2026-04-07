@@ -33,7 +33,7 @@ jobs:
       - name: Construir y subir imagen Docker
         uses: docker/build-push-action@v5
         with:
-          context: ./tfm-ai
+          context: .
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}
