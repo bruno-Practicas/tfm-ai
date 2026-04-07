@@ -18,8 +18,10 @@ jobs:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      - name: Crear Short Hash
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+      - name: Preparar variables de entorno (Short SHA y Repo en minusculas)
+        run: |
+          echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+          echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Iniciar sesion en GHCR
         uses: docker/login-action@v3
@@ -34,5 +36,5 @@ jobs:
           context: ./tfm-ai
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:sha-${{ env.SHORT_SHA }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}
+            ghcr.io/${{ env.REPO_LOWER }}:latest
