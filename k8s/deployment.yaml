@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      # Aqui le decimos que use la llave que creamos en la terminal
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: frontend
+          image: ghcr.io/bruno-practicas/tfm-ai:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          # Aqui inyectamos tu archivo .env de forma segura
+          envFrom:
+            - secretRef:
+                name: frontend-secret
