@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: tfm-ai
 spec:
   selector:
-    app: frontend
+    app: tfm-ai
   ports:
     - protocol: TCP
       port: 80
