@@ -157,6 +157,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Secretos reales de Kubernetes
+k8s/00-secret.yaml
+k8s-api/00-secret-api.yaml
+
 # Spyder project settings
 .spyderproject
 .spyproject

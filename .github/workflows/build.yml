@@ -30,6 +30,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Crear archivo .env
+        run: |
+          cat << EOF > .env
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
+          VITE_CHAT_API_KEY=${{ secrets.VITE_CHAT_API_KEY }}
+          EOF
+
       - name: Construir y subir imagen Docker
         uses: docker/build-push-action@v5
         with:
