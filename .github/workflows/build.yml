@@ -70,6 +70,7 @@ jobs:
             kubectl create secret generic tfm-ai-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
+              -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            kubectl rollout restart deployment tfm-ai-api
+            kubectl rollout restart deployment tfm-ai-api -n tfm-ai-api
