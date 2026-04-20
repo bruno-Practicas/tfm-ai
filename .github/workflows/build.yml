@@ -1,4 +1,4 @@
-name: Deploy FrontEnd a GHCR
+name: Build and Deploy TFM
 
 on:
   push:
@@ -9,7 +9,6 @@ jobs:
   build:
     name: Construir y Subir a GHCR
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
@@ -18,7 +17,7 @@ jobs:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      - name: Preparar variables de entorno (Short SHA y Repo en minusculas)
+      - name: Preparar variables de entorno
         run: |
           echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
           echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -45,3 +44,32 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}
             ghcr.io/${{ env.REPO_LOWER }}:latest
+
+  deploy-secrets:
+    name: Introducir Secretos y Reiniciar K8s
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ejecutar despliegue en AWS vía SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST_PROD }}
+          username: ubuntu
+          key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
+          script: |
+            echo "Aplicando secretos del Frontend..."
+            kubectl create secret generic frontend-secret \
+              --from-literal=VITE_API_URL="${{ secrets.VITE_API_URL }}" \
+              --from-literal=VITE_CHAT_API_KEY="${{ secrets.VITE_CHAT_API_KEY }}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            kubectl rollout restart deployment tfm-ai
+
+            echo "Aplicando secretos del Backend..."
+            kubectl create secret generic tfm-ai-api-secrets \
+              --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
+              --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            kubectl rollout restart deployment tfm-ai-api

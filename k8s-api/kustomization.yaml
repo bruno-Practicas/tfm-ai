@@ -4,20 +4,24 @@ kind: Kustomization
 namespace: default
 
 resources:
-  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/01-deployment.yaml
-  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/02-service.yaml
-  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/03-ingress.yaml
-  - 00-secret-api.yaml
+  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/deployment.yaml
+  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/service.yaml
+  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/ingressroute.yaml
+  - https://raw.githubusercontent.com/FabioCubas101/tfm-ai-api/refs/heads/main/k8s/middleware.yaml
 
 patches:
   - target:
-      kind: Ingress
-      name: tfm-ai-api
+      kind: IngressRoute
+      name: tfm-ai-api-http
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
-        value: bruno-api.helmcode.com
+        path: /spec/routes/0/match
+        value: "Host(`bruno-api.helmcode.com`)"
 
+  - target:
+      kind: IngressRoute
+      name: tfm-ai-api-https
+    patch: |-
       - op: replace
-        path: /spec/tls/0/hosts/0
-        value: bruno-api.helmcode.com
+        path: /spec/routes/0/match
+        value: "Host(`bruno-api.helmcode.com`)"
