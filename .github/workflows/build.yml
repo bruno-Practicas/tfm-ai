@@ -58,15 +58,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
           script: |
-            echo "Aplicando secretos del Frontend..."
-            kubectl create secret generic frontend-secret \
-              --from-literal=VITE_API_URL="${{ secrets.VITE_API_URL }}" \
-              --from-literal=VITE_CHAT_API_KEY="${{ secrets.VITE_CHAT_API_KEY }}" \
-              --dry-run=client -o yaml | kubectl apply -f -
-
-            kubectl rollout restart deployment tfm-ai
-
-            echo "Aplicando secretos del Backend..."
             kubectl create secret generic tfm-ai-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
