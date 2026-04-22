@@ -7,11 +7,21 @@ on:
 
 jobs:
   build:
-    name: Construir y Subir a GHCR
+    name: Construir y Subir a GHCR (${{ matrix.entorno }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
+    strategy:
+      matrix:
+        include:
+          - entorno: "Fabio"
+            secret_url: "VITE_API_URL_FABIO"
+            secret_key: "VITE_CHAT_API_KEY_FABIO"
+          - entorno: "Bruno"
+            secret_url: "VITE_API_URL_BRUNO"
+            secret_key: "VITE_CHAT_API_KEY_BRUNO"
 
     steps:
       - name: Descargar el codigo
@@ -29,21 +39,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Crear archivo .env
-        run: |
-          cat << EOF > .env
-          VITE_API_URL=${{ secrets.VITE_API_URL }}
-          VITE_CHAT_API_KEY=${{ secrets.VITE_CHAT_API_KEY }}
-          EOF
-
       - name: Construir y subir imagen Docker
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          build-args: |
+            VITE_API_URL=${{ secrets[matrix.secret_url] }}
+            VITE_CHAT_API_KEY=${{ secrets[matrix.secret_key] }}
           tags: |
-            ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}
-            ghcr.io/${{ env.REPO_LOWER }}:latest
+            ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}-${{ matrix.entorno }}
+            ghcr.io/${{ env.REPO_LOWER }}:${{ matrix.entorno }}-latest
 
   deploy-secrets:
     name: Introducir Secretos y Reiniciar K8s

@@ -1,5 +1,3 @@
-#Frontend
-
 FROM node:18-alpine AS builder
 
 WORKDIR /app
@@ -8,6 +6,13 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+ARG VITE_API_URL
+ARG VITE_CHAT_API_KEY
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_CHAT_API_KEY=$VITE_CHAT_API_KEY
+
 RUN npm run build
 
 FROM nginx:stable-alpine
