@@ -2,7 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: tfm-ai-http
-  namespace: default
+  namespace: tfm-ai-front
 spec:
   entryPoints:
     - web
@@ -20,7 +20,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: tfm-ai-https
-  namespace: default
+  namespace: tfm-ai-front
 spec:
   entryPoints:
     - websecure

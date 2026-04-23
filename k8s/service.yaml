@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: tfm-ai
+  namespace: tfm-ai-front
 spec:
   selector:
     app: tfm-ai

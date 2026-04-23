@@ -70,4 +70,4 @@ jobs:
               -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            kubectl rollout restart deployment tfm-ai-api -n tfm-ai-api
+            kubectl rollout restart deployment tfm-ai -n tfm-ai-front

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tfm-ai
+  namespace: tfm-ai-front
   labels:
     app: tfm-ai
 spec:
