@@ -79,7 +79,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST_PROD }}
           username: ubuntu
-          key: ${{ secrets.SERVER_SSH_KEY_PROD }}
+          key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
           script: |
             kubectl create secret generic bruno-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
