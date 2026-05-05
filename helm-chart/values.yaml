@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/fabiocubas101/tfm-ai-api
   pullPolicy: Always
-  tag: "sha-e22ab68"
+  tag: "sha-5059a84"
 
 imagePullSecrets: "ghcr-pull-secret"
 
