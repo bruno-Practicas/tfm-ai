@@ -24,30 +24,9 @@ spec:
             - secretRef:
                 name: {{ .Values.secrets.name }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Release.Name }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}
-    spec:
-      imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets }}
-      containers:
-        - name: api
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - containerPort: {{ .Values.service.targetPort }}
-          envFrom:
-            - secretRef:
-                name: {{ .Values.secrets.name }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
