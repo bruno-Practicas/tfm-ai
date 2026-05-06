@@ -89,11 +89,3 @@ jobs:
               -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            # 3. Despliegue con HELM 
-            # Usamos entorno_lower para el nombre de la release y añadimos --create-namespace
-            helm upgrade --install tfm-ai-${{ matrix.entorno_lower }} ./helm-chart \
-              --namespace tfm-ai-front \
-              --create-namespace \
-              --set image.tag=sha-$(echo ${{ github.sha }} | cut -c1-7)-${{ matrix.entorno }} \
-              --set ingress.host=${{ matrix.host }} \
-              --wait
