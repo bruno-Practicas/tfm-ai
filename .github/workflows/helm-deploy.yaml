@@ -12,19 +12,18 @@ jobs:
     permissions:
       contents: read
       packages: write
-
     strategy:
       matrix:
         include:
           - entorno: "Fabio"
             secret_url: "VITE_API_URL_FABIO"
             secret_key: "VITE_CHAT_API_KEY_FABIO"
-            host: "fabio.helmcode.com"
           - entorno: "Bruno"
             secret_url: "VITE_API_URL_BRUNO"
             secret_key: "VITE_CHAT_API_KEY_BRUNO"
-            host: "bruno.helmcode.com"
-
+    outputs:
+      # Guardamos el SHA corto para usarlo en el siguiente job
+      short_sha: ${{ env.SHORT_SHA }}
     steps:
       - name: Descargar el codigo
         uses: actions/checkout@v4
@@ -53,37 +52,48 @@ jobs:
             ghcr.io/${{ env.REPO_LOWER }}:sha-${{ env.SHORT_SHA }}-${{ matrix.entorno }}
             ghcr.io/${{ env.REPO_LOWER }}:${{ matrix.entorno }}-latest
 
-  deploy-secrets:
-    name: Actualizar Secretos y Desplegar K8s
+  deploy:
+    name: Desplegar con Helm (${{ matrix.entorno }})
     needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
           - entorno: "Fabio"
-            host: "fabio.helmcode.com"
+            host: "fabio.helmcode.com" # Ajusta según tus dominios
           - entorno: "Bruno"
             host: "bruno.helmcode.com"
 
     steps:
-      - name: Ejecutar despliegue con Helm en AWS vía SSH
+      - name: Descargar el código (necesario para enviar el chart al server)
+        uses: actions/checkout@v4
+
+      - name: Ejecutar despliegue en AWS vía SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST_PROD }}
           username: ubuntu
           key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
+          # Pasamos variables al script de SSH
+          envs: SHORT_SHA
           script: |
+            # 1. Asegurar que el Namespace existe
+            kubectl create namespace tfm-ai-front --dry-run=client -o yaml | kubectl apply -f -
+            kubectl create namespace tfm-ai-api --dry-run=client -o yaml | kubectl apply -f -
+
+            # 2. Actualizar Secretos de la API (como hacías antes)
             kubectl create secret generic tfm-ai-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
               -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            RELEASE_NAME=$(echo "${{ matrix.entorno }}" | tr '[:upper:]' '[:lower:]')
+            # 3. Despliegue con HELM
+            # Suponiendo que la carpeta del chart está en el repo como 'tfm-ai-chart'
+            # Usamos --set para sobrescribir los valores del values.yaml según el entorno
 
-            helm upgrade --install ${RELEASE_NAME}-front ./helm-chart \
+            helm upgrade --install tfm-ai-${{ matrix.entorno }} ./helm-chart \
               --namespace tfm-ai-front \
-              --create-namespace \
-              --set image.tag=${{ matrix.entorno }}-latest \
+              --set image.tag=sha-$(echo ${{ github.sha }} | cut -c1-7)-${{ matrix.entorno }} \
               --set ingress.host=${{ matrix.host }} \
-              --set entorno=${{ matrix.entorno }}
+              --wait

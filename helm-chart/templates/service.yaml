@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-tfm-ai
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
 spec:
   selector:
-    app: {{ .Release.Name }}-tfm-ai
+    app: {{ .Values.app.name }}
   ports:
     - protocol: TCP
       port: {{ .Values.service.port }}

@@ -1,26 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-tfm-ai
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
   labels:
-    app: {{ .Release.Name }}-tfm-ai
+    app: {{ .Values.app.name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-tfm-ai
+      app: {{ .Values.app.name }}
   template:
     metadata:
+      annotations:
+        rollout/timestamp: {{ now | quote }}
       labels:
-        app: {{ .Release.Name }}-tfm-ai
+        app: {{ .Values.app.name }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
       containers:
-        - name: tfm-ai
+        - name: {{ .Values.app.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

@@ -1,5 +1,6 @@
-entorno: Bruno
-replicaCount: 1
+app:
+  name: tfm-ai
+  namespace: tfm-ai-front
 
 image:
   repository: ghcr.io/bruno-practicas/tfm-ai

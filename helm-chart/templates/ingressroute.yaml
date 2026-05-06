@@ -1,8 +1,8 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: {{ .Release.Name }}-tfm-ai-http
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.app.name }}-http
+  namespace: {{ .Values.app.namespace }}
 spec:
   entryPoints:
     - web
@@ -10,16 +10,17 @@ spec:
     - match: Host(`{{ .Values.ingress.host }}`)
       kind: Rule
       services:
-        - name: {{ .Release.Name }}-tfm-ai
+        - name: {{ .Values.app.name }}
           port: {{ .Values.service.port }}
       middlewares:
-        - name: {{ .Release.Name }}-https-redirect
+        - name: {{ .Values.app.name }}-https-redirect
+
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: {{ .Release.Name }}-tfm-ai-https
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.app.name }}-https
+  namespace: {{ .Values.app.namespace }}
 spec:
   entryPoints:
     - websecure
@@ -27,7 +28,7 @@ spec:
     - match: Host(`{{ .Values.ingress.host }}`)
       kind: Rule
       services:
-        - name: {{ .Release.Name }}-tfm-ai
+        - name: {{ .Values.app.name }}
           port: {{ .Values.service.port }}
   tls:
     certResolver: {{ .Values.ingress.certResolver }}
