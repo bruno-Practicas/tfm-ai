@@ -1,0 +1,4 @@
+ingress:
+  host: fabio.helmcode.com
+image:
+  tag: fabio-latest # Este valor será modificado automáticamente por GitHub Actions

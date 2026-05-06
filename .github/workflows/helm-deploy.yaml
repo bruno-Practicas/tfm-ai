@@ -53,39 +53,55 @@ jobs:
             ghcr.io/${{ env.REPO_LOWER }}:${{ matrix.entorno }}-latest
 
   deploy:
-    name: Desplegar con Helm (${{ matrix.entorno }})
+    name: Actualizar GitOps y Secretos (${{ matrix.entorno }})
     needs: build
     runs-on: ubuntu-latest
+    # IMPORTANTE: max-parallel 1 evita que Fabio y Bruno hagan 'git push' al mismo tiempo y colisionen
+    max-parallel: 1
     strategy:
       matrix:
         include:
           - entorno: "Fabio"
-            entorno_lower: "fabio" # Variable en minúscula para Helm
-            host: "fabio.helmcode.com"
+            entorno_lower: "fabio"
           - entorno: "Bruno"
-            entorno_lower: "bruno" # Variable en minúscula para Helm
-            host: "bruno.helmcode.com"
+            entorno_lower: "bruno"
 
     steps:
       - name: Descargar el código
         uses: actions/checkout@v4
+        with:
+          # Necesario para poder hacer git push
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ejecutar despliegue en AWS vía SSH
+      - name: Ejecutar despliegue de Secretos en AWS vía SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST_PROD }}
           username: ubuntu
           key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
-          envs: SHORT_SHA
           script: |
-            cd PracticasBrunoFront/tfm-ai
-            # 1. Crear namespace para la API de forma silenciosa (solo si no existe)
             kubectl get namespace tfm-ai-api >/dev/null 2>&1 || kubectl create namespace tfm-ai-api
 
-            # 2. Actualizar Secretos de la API
             kubectl create secret generic tfm-ai-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
               -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Actualizar etiqueta de imagen en Helm (GitOps)
+        run: |
+          # 1. Configurar usuario de Git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 2. Descargar últimos cambios por si el otro entorno ya hizo push
+          git pull origin main
+
+          # 3. Usar sed para reemplazar el tag en el archivo correspondiente
+          NUEVO_TAG="sha-$(echo ${{ github.sha }} | cut -c1-7)-${{ matrix.entorno }}"
+          sed -i "s/tag: .*/tag: $NUEVO_TAG/g" PracticasBrunoFront/tfm-ai/helm-chart/values-${{ matrix.entorno_lower }}.yaml
+
+          # 4. Hacer commit y push
+          git add PracticasBrunoFront/tfm-ai/helm-chart/values-${{ matrix.entorno_lower }}.yaml
+          git commit -m "chore(gitops): update image tag for ${{ matrix.entorno }} to $NUEVO_TAG [skip ci]" || echo "No changes to commit"
+          git push origin main
