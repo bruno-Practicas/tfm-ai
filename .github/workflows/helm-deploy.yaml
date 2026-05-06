@@ -56,8 +56,6 @@ jobs:
     name: Actualizar GitOps y Secretos (${{ matrix.entorno }})
     needs: build
     runs-on: ubuntu-latest
-    # IMPORTANTE: max-parallel 1 evita que Fabio y Bruno hagan 'git push' al mismo tiempo y colisionen
-    max-parallel: 1
     strategy:
       matrix:
         include:
