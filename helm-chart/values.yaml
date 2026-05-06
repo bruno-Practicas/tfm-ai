@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/bruno-Practicas/tfm-ai
+  repository: ghcr.io/bruno-practicas/tfm-ai
   pullPolicy: Always
   tag: "sha-b65a8a4"
 
