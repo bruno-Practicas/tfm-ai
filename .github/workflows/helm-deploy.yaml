@@ -78,6 +78,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
           envs: SHORT_SHA
           script: |
+            cd PracticasBrunoFront/tfm-ai
             # 1. Crear namespace para la API de forma silenciosa (solo si no existe)
             kubectl get namespace tfm-ai-api >/dev/null 2>&1 || kubectl create namespace tfm-ai-api
 
