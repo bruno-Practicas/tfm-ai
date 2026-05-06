@@ -1,4 +1,4 @@
 ingress:
   host: bruno.helmcode.com
 image:
-  tag: bruno-latest
+  tag: sha-4874675-Bruno
