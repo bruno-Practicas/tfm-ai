@@ -1,4 +1,4 @@
 ingress:
   host: bruno.helmcode.com
 image:
-  tag: bruno-latest # Este valor será modificado automáticamente por GitHub Actions
+  tag: bruno-latest
