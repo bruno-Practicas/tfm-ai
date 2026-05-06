@@ -60,12 +60,14 @@ jobs:
       matrix:
         include:
           - entorno: "Fabio"
-            host: "fabio.helmcode.com" # Ajusta según tus dominios
+            entorno_lower: "fabio" # Variable en minúscula para Helm
+            host: "fabio.helmcode.com"
           - entorno: "Bruno"
+            entorno_lower: "bruno" # Variable en minúscula para Helm
             host: "bruno.helmcode.com"
 
     steps:
-      - name: Descargar el código (necesario para enviar el chart al server)
+      - name: Descargar el código
         uses: actions/checkout@v4
 
       - name: Ejecutar despliegue en AWS vía SSH
@@ -74,26 +76,23 @@ jobs:
           host: ${{ secrets.SERVER_HOST_PROD }}
           username: ubuntu
           key: ${{ secrets.SERVER_SSH_KEYS_PROD }}
-          # Pasamos variables al script de SSH
           envs: SHORT_SHA
           script: |
-            # 1. Asegurar que el Namespace existe
-            kubectl create namespace tfm-ai-front --dry-run=client -o yaml | kubectl apply -f -
-            kubectl create namespace tfm-ai-api --dry-run=client -o yaml | kubectl apply -f -
+            # 1. Crear namespace para la API de forma silenciosa (solo si no existe)
+            kubectl get namespace tfm-ai-api >/dev/null 2>&1 || kubectl create namespace tfm-ai-api
 
-            # 2. Actualizar Secretos de la API (como hacías antes)
+            # 2. Actualizar Secretos de la API
             kubectl create secret generic tfm-ai-api-secrets \
               --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               --from-literal=MASTER_API_KEY="${{ secrets.MASTER_API_KEY }}" \
               -n tfm-ai-api \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            # 3. Despliegue con HELM
-            # Suponiendo que la carpeta del chart está en el repo como 'tfm-ai-chart'
-            # Usamos --set para sobrescribir los valores del values.yaml según el entorno
-
-            helm upgrade --install tfm-ai-${{ matrix.entorno }} ./helm-chart \
+            # 3. Despliegue con HELM 
+            # Usamos entorno_lower para el nombre de la release y añadimos --create-namespace
+            helm upgrade --install tfm-ai-${{ matrix.entorno_lower }} ./tfm-ai-chart \
               --namespace tfm-ai-front \
+              --create-namespace \
               --set image.tag=sha-$(echo ${{ github.sha }} | cut -c1-7)-${{ matrix.entorno }} \
               --set ingress.host=${{ matrix.host }} \
               --wait
