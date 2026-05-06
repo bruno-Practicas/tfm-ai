@@ -1,16 +1,10 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ .Release.Name }}-cors
+  name: {{ .Release.Name }}-https-redirect
+  namespace: {{ .Release.Namespace }}
 spec:
-  headers:
-    accessControlAllowMethods:
-      - "GET"
-      - "OPTIONS"
-      - "PUT"
-      - "POST"
-      - "DELETE"
-    accessControlAllowOriginList:
-      - "https://bruno.helmcode.com"
-    accessControlAllowHeaders:
-      - "*"
+  redirectScheme:
+    scheme: https
+    permanent: true
+    port: "443"
