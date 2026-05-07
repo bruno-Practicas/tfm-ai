@@ -1,4 +1,4 @@
 ingress:
   host: fabio.helmcode.com
 image:
-  tag: fabio-latest
+  tag: sha-635a423-Fabio
