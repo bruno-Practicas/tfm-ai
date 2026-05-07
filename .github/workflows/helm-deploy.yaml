@@ -22,7 +22,6 @@ jobs:
             secret_url: "VITE_API_URL_BRUNO"
             secret_key: "VITE_CHAT_API_KEY_BRUNO"
     outputs:
-      # Guardamos el SHA corto para usarlo en el siguiente job
       short_sha: ${{ env.SHORT_SHA }}
     steps:
       - name: Descargar el codigo
@@ -67,9 +66,7 @@ jobs:
       - name: Descargar el código
         uses: actions/checkout@v4
         with:
-          # Necesario para poder hacer git push
           token: ${{ secrets.GITHUB_TOKEN }}
-          # Necesario para descargar todo el historial y que funcione el git pull --rebase
           fetch-depth: 0 
 
       - name: Ejecutar despliegue de Secretos en AWS vía SSH
@@ -89,20 +86,15 @@ jobs:
 
       - name: Actualizar etiqueta de imagen en Helm (GitOps)
         run: |
-          # 1. Configurar usuario de Git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 2. Usar sed para reemplazar el tag en el archivo correspondiente (Rutas relativas a GitHub Actions)
           NUEVO_TAG="sha-$(echo ${{ github.sha }} | cut -c1-7)-${{ matrix.entorno }}"
           sed -i "s/tag: .*/tag: $NUEVO_TAG/g" helm-chart/values-${{ matrix.entorno_lower }}.yaml
 
-          # 3. Hacer commit
           git add helm-chart/values-${{ matrix.entorno_lower }}.yaml
           git commit -m "chore(gitops): update image tag for ${{ matrix.entorno }} to $NUEVO_TAG [skip ci]" || echo "No changes to commit"
 
-          # 4. Bucle de reintento para el push
-          # Si un entorno sube cambios justo antes, este falla, espera 5 segundos, hace rebase y vuelve a intentar.
           for i in 1 2 3 4 5; do
             git pull --rebase origin helm
             git push origin helm && break || sleep 5
