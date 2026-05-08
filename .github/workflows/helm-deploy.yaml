@@ -103,8 +103,16 @@ jobs:
           done
 
   sync-argocd:
+    name: Sincronizar ArgoCD (${{ matrix.entorno }})
     runs-on: ubuntu-latest
     needs: deploy
+    strategy:
+      matrix:
+        include:
+          - entorno: "Fabio"
+            argo_app: "tfm-ai-api"
+          - entorno: "Bruno"
+            argo_app: "tfm-ai"
     steps:
       - name: Instalar ArgoCD CLI
         run: |
@@ -117,7 +125,7 @@ jobs:
           ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
           ARGOCD_APP_NAME: ${{ matrix.argo_app }}
         run: |
-          echo "Sincronizando la aplicación en ArgoCD ... "
+          echo "Sincronizando la aplicación ${{ env.ARGOCD_APP_NAME }} en ArgoCD ... "
           argocd app sync ${{ env.ARGOCD_APP_NAME }} \
             --server $ARGOCD_SERVER \
             --auth-token $ARGOCD_TOKEN \
